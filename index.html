@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Budget 2026 · Associação Volvo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="topo" id="topo">
+  <img src="assets/img/logo-teal.png" alt="Associação Volvo" class="topo-logo">
+  <span class="topo-titulo">Budget 2026</span>
+  <div class="topo-dir">
+    <div class="periodo" role="group" aria-label="Período de comparação">
+      <button data-periodo="ano" class="ativo">Ano 2026</button>
+      <button data-periodo="ytd" id="btnYtd">Acumulado</button>
+    </div>
+    <button class="icone" id="btnTela" title="Tela cheia (F)" aria-label="Tela cheia">⛶</button>
+  </div>
+</header>
+
+<main class="palco" id="palco">
+
+  <!-- 1. CAPA -->
+  <section class="slide capa ativo" data-titulo="Capa">
+    <div class="capa-brilho"></div>
+    <div class="capa-conteudo">
+      <img src="assets/img/logo-branco.png" alt="Associação Volvo" class="capa-logo">
+      <div class="capa-linha"></div>
+      <p class="capa-sobre">Apresentação</p>
+      <h1>Budget 2026</h1>
+      <p class="capa-sub">Previsto × Realizado × Saldo · Receitas, despesas e atividades</p>
+      <p class="capa-data" id="capaData"></p>
+    </div>
+    <p class="capa-dica">Use as setas ← → do teclado ou os botões abaixo para navegar</p>
+  </section>
+
+  <!-- 2. VISÃO GERAL -->
+  <section class="slide" data-titulo="Visão geral">
+    <div class="slide-cab">
+      <span class="tag">01 · Visão geral</span>
+      <h2>Previsto, realizado e saldo</h2>
+      <p class="nota" id="notaPeriodo"></p>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="grafs2">
+      <div class="cartao"><h3>Receitas mês a mês</h3><div class="graf"><canvas id="gRecMes"></canvas></div></div>
+      <div class="cartao"><h3>Despesas mês a mês</h3><div class="graf"><canvas id="gDespMes"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- 3. RESULTADO -->
+  <section class="slide" data-titulo="Resultado mensal">
+    <div class="slide-cab">
+      <span class="tag">02 · Resultado</span>
+      <h2>Resultado mês a mês</h2>
+      <p class="nota">Resultado = receitas − despesas (inclui despesas extraordinárias)</p>
+    </div>
+    <div class="cartao alto"><div class="graf graf-alto"><canvas id="gResultado"></canvas></div></div>
+    <div class="cartao"><div class="tabela-rolagem" id="tabResultado"></div></div>
+  </section>
+
+  <!-- 4. RECEITAS POR GRUPO -->
+  <section class="slide" data-titulo="Receitas por grupo">
+    <div class="slide-cab">
+      <span class="tag">03 · Receitas</span>
+      <h2>Receitas por grupo</h2>
+      <p class="nota">Clique em uma barra ou linha para abrir o comparativo mês a mês</p>
+    </div>
+    <div class="grafs2 grafs-lado">
+      <div class="cartao"><div class="graf graf-alto"><canvas id="gRecGrupo"></canvas></div></div>
+      <div class="cartao"><div class="tabela-rolagem" id="tabRecGrupo"></div></div>
+    </div>
+  </section>
+
+  <!-- 5. DESPESAS POR GRUPO -->
+  <section class="slide" data-titulo="Despesas por grupo">
+    <div class="slide-cab">
+      <span class="tag">04 · Despesas</span>
+      <h2>Despesas por grupo</h2>
+      <p class="nota">Clique em uma barra ou linha para abrir o comparativo mês a mês</p>
+    </div>
+    <div class="grafs2 grafs-lado">
+      <div class="cartao"><div class="graf graf-alto"><canvas id="gDespGrupo"></canvas></div></div>
+      <div class="cartao"><div class="tabela-rolagem" id="tabDespGrupo"></div></div>
+    </div>
+  </section>
+
+  <!-- 6. ATIVIDADES -->
+  <section class="slide" data-titulo="Atividades">
+    <div class="slide-cab">
+      <span class="tag">05 · Atividades</span>
+      <h2>Atividades do budget</h2>
+      <p class="nota">Clique em uma atividade para ver o comparativo mês a mês</p>
+    </div>
+    <div class="ativ-barra">
+      <div class="abas" role="tablist">
+        <button class="ativo" data-aba="desp">Despesas</button>
+        <button data-aba="rec">Receitas</button>
+      </div>
+      <input type="search" id="busca" placeholder="Buscar atividade… ex.: férias, Gympass, Festa Julina" autocomplete="off">
+    </div>
+    <div class="ativ-grade" id="ativGrade"></div>
+  </section>
+
+  <!-- 7. DESTAQUES -->
+  <section class="slide" data-titulo="Destaques">
+    <div class="slide-cab">
+      <span class="tag">06 · Destaques</span>
+      <h2>Maiores desvios do período</h2>
+      <p class="nota">Itens de despesa com maior diferença entre previsto e realizado</p>
+    </div>
+    <div class="grafs2">
+      <div class="cartao"><h3 class="ruim">Acima do previsto</h3><div id="destRuim" class="lista-dest"></div></div>
+      <div class="cartao"><h3 class="bom">Maiores economias</h3><div id="destBom" class="lista-dest"></div></div>
+    </div>
+  </section>
+
+  <!-- 8. ENCERRAMENTO -->
+  <section class="slide capa" data-titulo="Encerramento">
+    <div class="capa-brilho"></div>
+    <div class="capa-conteudo">
+      <img src="assets/img/logo-branco.png" alt="Associação Volvo" class="capa-logo">
+      <div class="capa-linha"></div>
+      <h1>Obrigado</h1>
+      <p class="capa-sub">Budget 2026 · Associação Volvo</p>
+    </div>
+  </section>
+
+</main>
+
+<nav class="rodape" aria-label="Navegação de slides">
+  <button class="nav-btn" id="ant" aria-label="Slide anterior">‹</button>
+  <div class="pontos" id="pontos"></div>
+  <button class="nav-btn" id="prox" aria-label="Próximo slide">›</button>
+  <span class="contador" id="contador"></span>
+</nav>
+
+<!-- MODAL DETALHE -->
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="mTitulo">
+    <div class="modal-cab">
+      <div>
+        <span class="tag" id="mGrupo"></span>
+        <h2 id="mTitulo"></h2>
+      </div>
+      <button class="icone fechar" id="mFechar" aria-label="Fechar">✕</button>
+    </div>
+    <div class="chips" id="mChips"></div>
+    <div class="kpis kpis-mini" id="mKpis"></div>
+    <div class="cartao"><div class="graf"><canvas id="gModal"></canvas></div></div>
+    <div class="cartao"><div class="tabela-rolagem" id="mTabela"></div></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
