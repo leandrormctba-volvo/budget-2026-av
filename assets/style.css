@@ -383,3 +383,64 @@ body.modo-impressao { overflow: visible; display: block; height: auto; width: 10
   background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.4); }
 @media (max-width: 640px) { .tela-btn span { display: none; } .tela-btn { width: 36px; padding: 0; justify-content: center; } }
 .modo-impressao .tela-btn { display: none !important; }
+
+/* ---------- v4: gráfico de grupos + legenda lateral pesquisável ---------- */
+.grafs-painel { grid-template-columns: 1.25fr 1fr; align-items: stretch; }
+.grafs-painel > .cartao { height: 560px; }
+.grafs-painel .graf-grupos { height: 100%; }
+.painel { display: flex; flex-direction: column; gap: 10px; padding: 16px 14px 12px; }
+.painel-cab { display: flex; flex-direction: column; gap: 8px; padding: 0 4px; }
+.painel-cab h3 { margin: 0; }
+.painel-busca { width: 100%; border: 1px solid var(--hairline); border-radius: 10px; padding: 9px 12px; font: inherit; font-size: 13px; background: var(--surface-2); outline: none; }
+.painel-busca:focus { border-color: var(--petroleo-2); background: var(--surface); box-shadow: 0 0 0 3px rgba(21,125,147,.15); }
+.painel-lista { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 2px 4px 4px; position: relative; }
+.leg { border: 1px solid var(--hairline); border-radius: 12px; padding: 10px 12px; cursor: pointer; background: var(--surface); transition: border-color .15s, background .15s, box-shadow .15s; outline: none; }
+.leg:hover, .leg:focus-visible { border-color: #b7d6de; }
+.leg.ativo { border-color: var(--petroleo-2); background: #f2f8fa; box-shadow: inset 4px 0 0 var(--petroleo-2); }
+.leg-topo { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: baseline; }
+.leg-nome { font-weight: 700; color: var(--petroleo-3); font-size: 13px; line-height: 1.3; min-width: 0; }
+.leg-saldo { font-weight: 800; font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.leg-vals, .leg-exec, .leg-itens { display: none; }
+.leg.ativo .leg-vals, .leg.ativo .leg-exec { display: flex; }
+.leg.ativo .leg-itens, .leg.aberto-busca .leg-itens { display: flex; }
+.leg-vals { flex-wrap: wrap; gap: 4px 16px; margin-top: 8px; font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.leg-vals b { color: var(--ink); font-weight: 700; }
+.sw { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
+.sw-prev { background: var(--previsto); }
+.sw-real { background: var(--petroleo); }
+.leg-exec { align-items: center; margin-top: 6px; font-size: 11.5px; color: var(--ink-2); flex-wrap: wrap; gap: 2px 0; }
+.leg-exec b { margin-left: 3px; font-variant-numeric: tabular-nums; }
+.leg-itens { flex-direction: column; margin-top: 8px; border-top: 1px dashed var(--hairline); padding-top: 6px; gap: 2px; }
+.leg-item { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; text-align: left; border: 0; background: transparent; padding: 6px 6px; border-radius: 8px; color: var(--ink); }
+.leg-item:hover { background: #e6f1f4; }
+.leg-item.achado { background: #fff4d6; }
+.leg-item-nome { font-size: 12px; font-weight: 600; min-width: 0; }
+.leg-item-saldo { font-size: 12px; font-weight: 700; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+.leg-item-val { grid-column: 1 / -1; font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.leg-item-val small { font-size: 11px; }
+.painel-vazio { padding: 20px; }
+.descritivo h3 { margin-bottom: 8px; }
+.descritivo .tabela-grande { max-height: none; }
+
+@media (max-width: 1100px) {
+  .grafs-painel { grid-template-columns: 1fr; }
+  .grafs-painel > .cartao { height: auto; }
+  .grafs-painel .graf-grupos { height: 420px; }
+  .painel-lista { max-height: 420px; }
+}
+@media (max-width: 640px) {
+  .grafs-painel .graf-grupos { height: 380px; }
+  .painel-lista { max-height: 380px; }
+  .leg-vals { flex-direction: column; }
+}
+
+/* impressão: a legenda interativa some (os mesmos valores estão no descritivo abaixo) */
+.modo-impressao .grafs-painel { grid-template-columns: 1fr; }
+.modo-impressao .grafs-painel > .cartao { height: auto; }
+.modo-impressao .grafs-painel .graf-grupos { height: 380px; }
+.modo-impressao .painel { display: none; }
+.modo-impressao .descritivo { break-inside: auto; }
+.modo-impressao .descritivo h3 { font-size: 13px; }
+.leg-item-nome { grid-column: 1; grid-row: 1; }
+.leg-item-saldo { grid-column: 2; grid-row: 1; }
+.leg-item-val { grid-column: 1 / -1; grid-row: 2; }

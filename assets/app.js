@@ -224,17 +224,21 @@
   }
 
   /* ---------- 7. Grupos detalhados (1.1, 1.1.1 … / 2.1, 2.1.1 …) ---------- */
-  function renderGrupos(tipo, idGraf, idTab) {
+  const buscaPainel = {}; // texto pesquisado em cada painel (mantido ao trocar o período)
+  function renderGrupos(tipo, idGraf, idTab, idPainel) {
     const raizes = tipo === "rec" ? ["1"] : ["2", "6"];
     const gs = grupos.filter(g => raizes.includes(g.raiz) && vivo(g)).map(g => ({ g, t: totais(g) }));
+    let ativoIdx = 0;
+    let filtro = new Set(gs.map((x, i) => i)); // índices que batem com a pesquisa
 
+    const corBarra = (cor, apagada) => ctx => (ctx.type !== "data" || filtro.has(ctx.dataIndex) ? cor : apagada);
     desenhar(idGraf, {
       type: "bar",
       data: {
         labels: gs.map(x => x.g.cod + " · " + titulo(x.g.nome)),
         datasets: [
-          { label: "Previsto", data: gs.map(x => x.t.P), backgroundColor: COR.previsto, borderRadius: 4, maxBarThickness: 16 },
-          { label: "Realizado", data: gs.map(x => x.t.R), backgroundColor: COR.realizado, borderRadius: 4, maxBarThickness: 16 }
+          { label: "Previsto", data: gs.map(x => x.t.P), backgroundColor: corBarra(COR.previsto, "#e3eef1"), borderRadius: 4, maxBarThickness: 16 },
+          { label: "Realizado", data: gs.map(x => x.t.R), backgroundColor: corBarra(COR.realizado, "#c9d6da"), borderRadius: 4, maxBarThickness: 16 }
         ]
       },
       options: {
@@ -242,13 +246,96 @@
         interaction: { mode: "index", intersect: false, axis: "y" },
         plugins: {
           legend: { position: "top", align: "end" },
-          tooltip: { callbacks: { footer: items => { const x = gs[items[0].dataIndex].t; return "Saldo: " + sinal(x.S) + exato(x.S) + "  ·  " + pct(x.exec) + " executado"; } } }
+          tooltip: { enabled: false } // a legenda abre no painel ao lado
         },
         scales: { x: Object.assign({ beginAtZero: true }, eixoValor), y: Object.assign({}, eixoCat, { ticks: { autoSkip: false, callback(v) { const s = this.getLabelForValue(v); const max = window.innerWidth < 640 && !imprimindo ? 18 : 30; return s.length > max ? s.slice(0, max - 1) + "…" : s; } } }) },
         onClick: (e, els) => { if (els.length) abrirDetalhe(gs[els[0].index].g); },
-        onHover: (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; }
+        onHover: (e, els) => {
+          e.native.target.style.cursor = els.length ? "pointer" : "default";
+          if (els.length && els[0].index !== ativoIdx) marcar(els[0].index, true);
+        }
       }
     });
+    const grafico = graficos[idGraf];
+
+    /* painel lateral: legenda de todos os grupos, com pesquisa */
+    const painel = document.getElementById(idPainel);
+    const linhaItem = i => {
+      const t = totais(i);
+      return `<button class="leg-item" data-cod="${i.cod}"><span class="leg-item-nome"><span class="cod">${i.cod}</span> ${esc(titulo(i.nome))}</span>
+        <span class="leg-item-val">${exato(t.R)} <small>de ${exato(t.P)}</small></span><span class="leg-item-saldo ${classe(t.S)}">${sinal(t.S)}${curto(t.S)}</span></button>`;
+    };
+    painel.innerHTML = `
+      <div class="painel-cab">
+        <h3>Legenda do gráfico</h3>
+        <input type="search" class="painel-busca" placeholder="Pesquisar grupo ou item… ex.: ${tipo === "rec" ? "associado" : "manutenção"}" autocomplete="off">
+      </div>
+      <div class="painel-lista">
+        ${gs.map((x, i) => {
+          const larg = x.t.exec == null ? (x.t.R ? 100 : 0) : Math.min(100, x.t.exec * 100);
+          const acima = tipo === "desp" && x.t.R > x.t.P + 0.5;
+          return `<div class="leg" data-i="${i}" tabindex="0" role="button" aria-label="${esc(x.g.cod + " " + titulo(x.g.nome))}">
+            <div class="leg-topo"><span class="cod">${x.g.cod}</span><span class="leg-nome">${esc(titulo(x.g.nome))}</span><span class="leg-saldo ${classe(x.t.S)}">${sinal(x.t.S)}${curto(x.t.S)}</span></div>
+            <div class="leg-vals">
+              <span><i class="sw sw-prev"></i>Previsto <b>${exato(x.t.P)}</b></span>
+              <span><i class="sw sw-real"></i>Realizado <b>${exato(x.t.R)}</b></span>
+            </div>
+            <div class="leg-exec"><span class="mini-barra"><span class="${acima ? "acima" : ""}" style="width:${larg}%"></span></span>${pct(x.t.exec)} executado · saldo <b class="${classe(x.t.S)}">${sinal(x.t.S)}${exato(x.t.S)}</b></div>
+            <div class="leg-itens">${x.g.itens.filter(vivo).map(linhaItem).join("")}</div>
+          </div>`;
+        }).join("")}
+        <div class="vazio painel-vazio" hidden>Nada encontrado.</div>
+      </div>`;
+    const lista = painel.querySelector(".painel-lista");
+    const rows = [...painel.querySelectorAll(".leg")];
+
+    function marcar(i, rolar) {
+      ativoIdx = i;
+      rows.forEach((r, k) => r.classList.toggle("ativo", k === i));
+      grafico.setActiveElements([{ datasetIndex: 0, index: i }, { datasetIndex: 1, index: i }]);
+      grafico.update("none");
+      if (rolar) {
+        const r = rows[i];
+        if (r.offsetTop < lista.scrollTop || r.offsetTop + r.offsetHeight > lista.scrollTop + lista.clientHeight)
+          lista.scrollTo({ top: r.offsetTop - 6, behavior: "smooth" });
+      }
+    }
+    rows.forEach((r, i) => {
+      r.addEventListener("mouseenter", () => marcar(i, false));
+      r.addEventListener("focus", () => marcar(i, false));
+      r.addEventListener("click", e => { if (!e.target.closest(".leg-item")) abrirDetalhe(gs[i].g); });
+      r.addEventListener("keydown", e => { if (e.key === "Enter") abrirDetalhe(gs[i].g); });
+    });
+    painel.querySelectorAll(".leg-item").forEach(b => b.addEventListener("click", () => abrirDetalhe(porCod[b.dataset.cod])));
+
+    const busca = painel.querySelector(".painel-busca");
+    function filtrar() {
+      const q = semAcento(busca.value.trim());
+      buscaPainel[idPainel] = busca.value;
+      filtro = new Set();
+      rows.forEach((r, i) => {
+        const g = gs[i].g;
+        const okGrupo = !q || semAcento(g.nome).includes(q) || g.cod.startsWith(q);
+        let okItem = false;
+        r.querySelectorAll(".leg-item").forEach(b => {
+          const it = porCod[b.dataset.cod];
+          const ok = !!q && (semAcento(it.nome).includes(q) || it.cod.startsWith(q));
+          b.classList.toggle("achado", ok);
+          okItem = okItem || ok;
+        });
+        const mostra = okGrupo || okItem;
+        r.hidden = !mostra;
+        r.classList.toggle("aberto-busca", !!q && okItem);
+        if (mostra) filtro.add(i);
+      });
+      painel.querySelector(".painel-vazio").hidden = filtro.size > 0;
+      grafico.update("none");
+      if (filtro.size && !filtro.has(ativoIdx)) marcar([...filtro][0], true);
+    }
+    busca.addEventListener("input", filtrar);
+    busca.addEventListener("keydown", e => { if (e.key === "Escape") { busca.value = ""; filtrar(); } });
+    if (buscaPainel[idPainel]) { busca.value = buscaPainel[idPainel]; filtrar(); }
+    marcar(filtro.has(0) ? 0 : [...filtro][0] || 0, false);
 
     let html = "";
     raizes.forEach(raiz => {
@@ -451,8 +538,8 @@
     document.querySelector('[data-periodo="ano"]').title = "Ano inteiro (igual à coluna Total da planilha)";
     renderMensal(REC, "rec");
     renderMensal(DESP, "desp");
-    renderGrupos("rec", "gRecGrupo", "tabRecGrupo");
-    renderGrupos("desp", "gDespGrupo", "tabDespGrupo");
+    renderGrupos("rec", "gRecGrupo", "tabRecGrupo", "painelRec");
+    renderGrupos("desp", "gDespGrupo", "tabDespGrupo", "painelDesp");
     renderAtividades();
     renderDestaques();
     renderEstouros();
