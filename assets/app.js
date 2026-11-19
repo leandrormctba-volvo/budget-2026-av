@@ -244,7 +244,7 @@
           legend: { position: "top", align: "end" },
           tooltip: { callbacks: { footer: items => { const x = gs[items[0].dataIndex].t; return "Saldo: " + sinal(x.S) + exato(x.S) + "  ·  " + pct(x.exec) + " executado"; } } }
         },
-        scales: { x: Object.assign({ beginAtZero: true }, eixoValor), y: Object.assign({}, eixoCat, { ticks: { autoSkip: false, callback(v) { const s = this.getLabelForValue(v); return s.length > 30 ? s.slice(0, 29) + "…" : s; } } }) },
+        scales: { x: Object.assign({ beginAtZero: true }, eixoValor), y: Object.assign({}, eixoCat, { ticks: { autoSkip: false, callback(v) { const s = this.getLabelForValue(v); const max = window.innerWidth < 640 && !imprimindo ? 18 : 30; return s.length > max ? s.slice(0, max - 1) + "…" : s; } } }) },
         onClick: (e, els) => { if (els.length) abrirDetalhe(gs[els[0].index].g); },
         onHover: (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; }
       }
@@ -403,7 +403,6 @@
     document.getElementById("contador").textContent = `${idx + 1} / ${slides.length} · ${slides[idx].dataset.titulo}`;
     slides[idx].scrollTop = 0;
     slides[idx].querySelectorAll("canvas").forEach(c => { const g = graficos[c.id]; if (g) { g.reset(); g.update(); } });
-    try { history.replaceState(null, "", "#" + (idx + 1)); } catch (e) {}
   }
   document.getElementById("ant").addEventListener("click", () => ir(idx - 1));
   document.getElementById("prox").addEventListener("click", () => ir(idx + 1));
@@ -460,9 +459,34 @@
     if (atual) abrirDetalhe(atual);
   }
 
-  const inicial = parseInt(location.hash.slice(1), 10);
-  ir(isNaN(inicial) ? 0 : inicial - 1);
+  /* ---------- 13. PDF / impressão ---------- */
+  // monta todos os slides em sequência, com largura fixa de página A4 paisagem, e redesenha os gráficos nesse tamanho
+  let imprimindo = false;
+  function prepararImpressao() {
+    if (imprimindo) return;
+    imprimindo = true;
+    if (atual) fecharDetalhe();
+    document.body.classList.add("modo-impressao");
+    Object.values(graficos).forEach(g => { g.options.animation = false; g.options.devicePixelRatio = 2; g.resize(); g.update("none"); });
+  }
+  function finalizarImpressao() {
+    if (!imprimindo) return;
+    imprimindo = false;
+    document.body.classList.remove("modo-impressao");
+    renderTudo(); ir(idx);
+  }
+  window.addEventListener("beforeprint", prepararImpressao);
+  window.addEventListener("afterprint", finalizarImpressao);
+  document.getElementById("btnPdf").addEventListener("click", () => {
+    prepararImpressao();
+    setTimeout(() => { window.print(); setTimeout(finalizarImpressao, 500); }, 350);
+  });
+
+  // ao abrir ou atualizar a página, sempre começa pela capa
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+  window.irParaSlide = n => ir(n - 1);
+  ir(0);
   // espera a fonte Montserrat carregar para os gráficos medirem os rótulos corretamente
-  const iniciar = () => { renderTudo(); ir(idx); };
+  const iniciar = () => { renderTudo(); ir(idx); if (/[?&]pdf=1/.test(location.search)) prepararImpressao(); };
   (document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 2500))]) : Promise.resolve()).then(iniciar);
 })();

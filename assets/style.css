@@ -189,7 +189,7 @@ body.na-capa .rodape { background: var(--petroleo-3); border-color: rgba(255,255
 .pontos { display: flex; gap: 8px; }
 .pontos button { width: 9px; height: 9px; border-radius: 9px; border: 0; background: #c7d3d8; padding: 0; transition: width .3s, background .3s; }
 .pontos button.ativo { width: 26px; background: var(--petroleo-2); }
-.contador { position: absolute; right: 24px; font-size: 12px; color: var(--ink-2); font-weight: 600; }
+.contador { position: absolute; left: 24px; font-size: 12px; color: var(--ink-2); font-weight: 600; }
 body.na-capa .contador { color: #a9d7e1; }
 
 /* ---------- modal ---------- */
@@ -224,12 +224,6 @@ body.na-capa .contador { color: #a9d7e1; }
   .modal-caixa { border-radius: 0; padding: 18px 16px; height: 100%; }
   .graf { height: 230px; }
   .graf-alto { height: 300px; }
-}
-@media print {
-  body { overflow: visible; display: block; }
-  .topo, .rodape { display: none; }
-  .palco { position: static; }
-  .slide { position: static; opacity: 1; visibility: visible; transform: none; page-break-after: always; min-height: 100vh; overflow: visible; }
 }
 
 /* ---------- v2: capa, mês a mês, detalhado, estouros ---------- */
@@ -269,3 +263,113 @@ td .sub { font-size: 11px; color: var(--ink-2); font-weight: 500; }
   .graf-grupos { height: 420px; }
   .tabela-grande { max-height: none; }
 }
+
+/* ---------- v3: botão PDF ---------- */
+.btn-pdf {
+  position: absolute; right: 20px; display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--hairline); background: var(--surface); color: var(--petroleo);
+  font-size: 12px; font-weight: 700; padding: 7px 12px; border-radius: 999px;
+}
+.btn-pdf:hover { background: var(--petroleo); color: #fff; border-color: var(--petroleo); }
+body.na-capa .btn-pdf { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22); color: rgba(255,255,255,.85); }
+body.na-capa .btn-pdf:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+/* ---------- v3: ajustes de celular ---------- */
+@media (max-width: 640px) {
+  .rodape { justify-content: flex-start; padding-left: 12px; gap: 8px; }
+  .nav-btn { width: 34px; height: 34px; font-size: 20px; }
+  .btn-pdf { right: 12px; padding: 7px 10px; }
+  .pontos button { width: 7px; height: 7px; }
+  .pontos button.ativo { width: 18px; }
+  .periodo button { padding: 6px 10px; font-size: 12px; }
+  .topo-logo { height: 26px; }
+  .capa-logo { width: min(62vw, 300px); margin-bottom: 22px; }
+  .capa-tela { top: 12px; right: 12px; }
+  .kpis-grandes .kpi { padding: 14px 16px; }
+  .kpi-val.grande { font-size: 20px; }
+  .grafs2 { gap: 14px; }
+  .cartao { padding: 14px 12px; border-radius: 14px; }
+  .graf-grupos { height: 460px; }
+  table { font-size: 11.5px; }
+  th, td { padding: 7px 8px; }
+  table.hier tr.item td:first-child { padding-left: 16px; }
+  .tabela-rolagem { -webkit-overflow-scrolling: touch; }
+  .tabela-rolagem table { min-width: 560px; }
+  #estTab table { min-width: 720px; }
+  .insights li { font-size: 13px; }
+  .ativ-grade { grid-template-columns: 1fr; }
+  .dest { padding: 10px 6px; }
+  .kpis-mini { gap: 10px; }
+  .kpis-mini .kpi-val { font-size: 15px; }
+  .chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .chips button { flex: none; }
+}
+
+/* ---------- v3: PDF / impressão (A4 paisagem) ---------- */
+@page { size: A4 landscape; margin: 8mm; }
+@media print {
+  html, body { background: #fff !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+body.modo-impressao { overflow: visible; display: block; height: auto; width: 1060px; margin: 0 auto; background: #fff; font-size: 12.5px; }
+.modo-impressao .topo, .modo-impressao .rodape, .modo-impressao .modal, .modo-impressao .capa-tela, .modo-impressao .ativ-barra { display: none !important; }
+.modo-impressao .palco { position: static; overflow: visible; }
+.modo-impressao .slide {
+  position: static; opacity: 1; visibility: visible; transform: none; transition: none;
+  overflow: visible; height: auto; padding: 4px 2px 0; gap: 12px;
+  break-after: page; page-break-after: always;
+}
+.modo-impressao .slide:last-child { break-after: auto; page-break-after: auto; }
+.modo-impressao .slide > * { max-width: none; }
+.modo-impressao .slide.capa { height: 193mm; padding: 0; border-radius: 6px; overflow: hidden; }
+.modo-impressao .capa-brilho, .modo-impressao .capa-conteudo > * { animation: none !important; }
+.modo-impressao .capa-logo { width: 340px; }
+.modo-impressao .capa h1 { font-size: 80px; }
+.modo-impressao .slide-cab h2 { font-size: 24px; }
+.modo-impressao .nota { font-size: 12px; }
+.modo-impressao .cartao, .modo-impressao .kpi, .modo-impressao .ativ { box-shadow: none; }
+.modo-impressao .cartao { padding: 12px 14px; break-inside: avoid; }
+.modo-impressao .kpis { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.modo-impressao .kpi { padding: 12px 16px; break-inside: avoid; }
+.modo-impressao .kpi-val { font-size: 18px; }
+.modo-impressao .kpi-val.grande { font-size: 22px; }
+.modo-impressao .grafs2 { grid-template-columns: 1fr 1fr; gap: 12px; }
+.modo-impressao .grafs-mensal { grid-template-columns: 1fr 1.15fr; }
+.modo-impressao .grafs-detalhe { grid-template-columns: 1fr; }
+.modo-impressao .grafs-detalhe .cartao:last-child { break-inside: auto; }
+.modo-impressao .graf { height: 230px; }
+.modo-impressao .graf-alto { height: 300px; }
+.modo-impressao .graf-grupos { height: 300px; }
+.modo-impressao .tabela-rolagem { max-height: none !important; overflow: visible; }
+.modo-impressao .tabela-rolagem table { min-width: 0 !important; }
+.modo-impressao #estTab { break-inside: auto; }
+.modo-impressao .cartao:has(#estTab), .modo-impressao .cartao:has(.hier) { break-inside: auto; }
+.modo-impressao table { font-size: 11px; }
+.modo-impressao th { position: static; padding: 6px 8px; }
+.modo-impressao td { padding: 5px 8px; }
+.modo-impressao thead { display: table-header-group; }
+.modo-impressao tr { break-inside: avoid; page-break-inside: avoid; }
+.modo-impressao table.hier tr.item td:first-child { padding-left: 24px; }
+.modo-impressao .insights { break-inside: avoid; }
+.modo-impressao .insights li { font-size: 12px; }
+.modo-impressao .ativ-grade { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.modo-impressao .ativ { padding: 12px; break-inside: avoid; }
+.modo-impressao .ativ:hover { transform: none; }
+.modo-impressao .dest { padding: 7px 10px; break-inside: avoid; }
+.modo-impressao .slide.capa { position: relative; }
+.modo-impressao .slide-cab .tag { margin-bottom: 0; }
+.modo-impressao .slide-cab h2 { font-size: 22px; }
+.modo-impressao .kpis-grandes .kpi { padding: 10px 14px; }
+.modo-impressao .kpi-val.grande { font-size: 20px; margin-top: 2px; }
+.modo-impressao .grafs-mensal .graf-alto { height: 330px; }
+.modo-impressao .grafs-mensal td, .modo-impressao .grafs-mensal th { padding: 4px 8px; font-size: 10.5px; }
+.modo-impressao .insights { padding: 10px 14px; }
+.modo-impressao .insights h3 { font-size: 13px; margin-bottom: 4px; }
+.modo-impressao .insights ul { gap: 3px; }
+.modo-impressao .insights li { font-size: 11px; line-height: 1.4; }
+.modo-impressao .insights li::before { top: 6px; }
+.modo-impressao .grafs-mensal td:first-child { white-space: nowrap; }
+.modo-impressao .grafs-mensal .graf-alto { height: 310px; }
+.modo-impressao .slide[data-titulo$="por grupo"] .nota,
+.modo-impressao .slide[data-titulo="Atividades"] .nota { display: none; }
+.modo-impressao .graf-grupos { height: 380px; }
