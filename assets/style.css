@@ -373,3 +373,13 @@ body.modo-impressao { overflow: visible; display: block; height: auto; width: 10
 .modo-impressao .slide[data-titulo$="por grupo"] .nota,
 .modo-impressao .slide[data-titulo="Atividades"] .nota { display: none; }
 .modo-impressao .graf-grupos { height: 380px; }
+
+/* ---------- botão Tela cheia bem visível (canto superior direito) ---------- */
+.tela-btn { display: inline-flex; align-items: center; gap: 7px; border: 0; height: 36px; padding: 0 15px; border-radius: 999px; cursor: pointer;
+  font: 600 12.5px "Montserrat", system-ui, sans-serif; color: #fff; background: linear-gradient(180deg,#14788c,#0c5868);
+  box-shadow: 0 4px 12px rgba(12,88,104,.35), inset 0 1px 0 rgba(255,255,255,.25); }
+.tela-btn:hover { filter: brightness(1.1); }
+.capa-tela { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; padding: 9px 16px; color: #fff;
+  background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.4); }
+@media (max-width: 640px) { .tela-btn span { display: none; } .tela-btn { width: 36px; padding: 0; justify-content: center; } }
+.modo-impressao .tela-btn { display: none !important; }
