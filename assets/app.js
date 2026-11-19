@@ -214,7 +214,7 @@
     const neg = itens.filter(i => i.t.S < -0.5).sort((a, b) => a.t.S - b.t.S).slice(0, 4);
     const pos = itens.filter(i => i.t.S > 0.5).sort((a, b) => b.t.S - a.t.S).slice(0, 3);
     const fmtLista = arr => arr.map(i => `${esc(titulo(i.x.nome))} <span class="${classe(i.t.S)}">(${sinal(i.t.S)}${curto(i.t.S)})</span>`).join(", ");
-    if (neg.length) li.push(`<b>${rec ? "Itens que mais puxaram o saldo para baixo" : "Itens que mais estouraram"}:</b> ${fmtLista(neg)}.`);
+    if (neg.length) li.push(`<b>${rec ? "Itens que mais puxaram o saldo para baixo" : "Itens com maior realizado acima do previsto"}:</b> ${fmtLista(neg)}.`);
     if (pos.length) li.push(`<b>${rec ? "Itens que compensaram (entraram acima do previsto)" : "Maiores economias"}:</b> ${fmtLista(pos)}.`);
 
     const tituloIns = rec
@@ -303,7 +303,7 @@
     grade.querySelectorAll(".ativ").forEach(b => b.addEventListener("click", () => abrirDetalhe(porCod[b.dataset.cod])));
   }
 
-  /* ---------- 9. Destaques e estouros ---------- */
+  /* ---------- 9. Destaques e itens com realizado acima do previsto ---------- */
   // itens de despesa: nível 3, mais os grupos sem subitens (ex.: 6.1 Despesas Extraordinárias)
   const itensDespesa = () => linhas.filter(l => l.tipo === "desp" && vivo(l) && (l.nivel === 3 || (l.nivel === 2 && !(l.itens || []).length)));
 
@@ -327,18 +327,19 @@
       .map(x => Object.assign(x, { est: x.t.R - x.t.P })).sort((a, b) => b.est - a.est);
     const total = lista.reduce((a, x) => a + x.est, 0);
     const semPrev = lista.filter(x => !x.t.P);
+    const somaP = lista.reduce((a, x) => a + x.t.P, 0), somaR = lista.reduce((a, x) => a + x.t.R, 0);
     document.getElementById("estKpis").innerHTML = `
-      <div class="kpi"><div class="kpi-nome">Itens que estouraram</div><div class="kpi-val grande">${lista.length}</div><div class="kpi-exec">${semPrev.length} deles não tinham nada previsto</div></div>
-      <div class="kpi"><div class="kpi-nome">Total gasto acima do previsto</div><div class="kpi-val grande neg">${exato(total)}</div><div class="kpi-exec">soma dos estouros de cada item</div></div>
-      <div class="kpi destaque"><div class="kpi-nome">Comparado à receita prevista</div><div class="kpi-val grande">${pct(total / recPrev)}</div><div class="kpi-exec">da receita prevista (${curto(recPrev)}) foi consumida por estouros</div></div>`;
+      <div class="kpi"><div class="kpi-nome">Itens com realizado acima do previsto</div><div class="kpi-val grande">${lista.length}</div><div class="kpi-exec">sendo ${semPrev.length} sem valor orçado no período</div></div>
+      <div class="kpi"><div class="kpi-nome">Valor realizado acima do previsto</div><div class="kpi-val grande neg">${exato(total)}</div><div class="kpi-exec">soma da diferença (realizado − previsto) de cada item</div></div>
+      <div class="kpi destaque"><div class="kpi-nome">Impacto sobre a receita prevista</div><div class="kpi-val grande">${pct(total / recPrev)}</div><div class="kpi-exec">da receita prevista (${curto(recPrev)}) foi absorvida por esses desvios</div></div>`;
     const max = Math.max(...lista.map(x => x.est), 1);
-    document.getElementById("estTab").innerHTML = `<table><thead><tr><th>Item</th><th>Previsto</th><th>Realizado</th><th>Estouro (R$)</th><th>Estouro (%)</th><th>% da receita prevista</th></tr></thead><tbody>
+    document.getElementById("estTab").innerHTML = `<table><thead><tr><th>Item</th><th>Previsto</th><th>Realizado</th><th>Desvio (R$)</th><th>Desvio (%)</th><th>% da receita prevista</th></tr></thead><tbody>
       ${lista.map(x => `<tr class="clicavel" data-cod="${x.l.cod}"><td><span class="cod">${x.l.cod}</span> ${esc(titulo(x.l.nome))}<div class="sub">${esc(titulo((porCod[x.l.grupo] && x.l.nivel === 3 ? porCod[x.l.grupo] : porCod[x.l.raiz]).nome))}</div></td>
         <td>${exato(x.t.P)}</td><td>${exato(x.t.R)}</td>
         <td class="neg"><span class="mini-barra"><span class="acima" style="width:${(x.est / max) * 100}%"></span></span>${exato(x.est)}</td>
-        <td>${x.t.P ? "+" + pct(x.est / x.t.P) : '<span class="selo">sem previsão</span>'}</td>
+        <td>${x.t.P ? "+" + pct(x.est / x.t.P) : '<span class="selo">não orçado</span>'}</td>
         <td>${pct(x.est / recPrev)}</td></tr>`).join("")}
-      <tr class="total"><td>Total dos estouros</td><td></td><td></td><td class="neg">${exato(total)}</td><td></td><td>${pct(total / recPrev)}</td></tr>
+      <tr class="total"><td>Total</td><td>${exato(somaP)}</td><td>${exato(somaR)}</td><td class="neg">${exato(total)}</td><td>${somaP ? "+" + pct(total / somaP) : ""}</td><td>${pct(total / recPrev)}</td></tr>
     </tbody></table>`;
     document.querySelectorAll("#estTab tr[data-cod]").forEach(tr => tr.addEventListener("click", () => abrirDetalhe(porCod[tr.dataset.cod])));
   }
@@ -447,11 +448,8 @@
   function renderTudo() {
     const mesNome = MESES_LONGOS[ultimoMes];
     document.getElementById("btnYtd").textContent = "Até " + MESES[ultimoMes];
-    document.getElementById("notaPeriodo").innerHTML = (periodo === "ano"
-      ? `Ano inteiro (igual à coluna <b>Total</b> da planilha). Realizado lançado até ${mesNome}.`
-      : `Previsto e realizado <b>acumulados de janeiro a ${mesNome}</b>.`)
-      + (parcial ? ` * ${MESES[ultimoMes]}: mês com lançamentos parciais.` : "");
-    renderVisaoGeral();
+    document.getElementById("btnYtd").title = "Previsto e realizado acumulados de janeiro a " + mesNome;
+    document.querySelector('[data-periodo="ano"]').title = "Ano inteiro (igual à coluna Total da planilha)";
     renderMensal(REC, "rec");
     renderMensal(DESP, "desp");
     renderGrupos("rec", "gRecGrupo", "tabRecGrupo");
