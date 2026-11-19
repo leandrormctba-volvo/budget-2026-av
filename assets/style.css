@@ -231,3 +231,41 @@ body.na-capa .contador { color: #a9d7e1; }
   .palco { position: static; }
   .slide { position: static; opacity: 1; visibility: visible; transform: none; page-break-after: always; min-height: 100vh; overflow: visible; }
 }
+
+/* ---------- v2: capa, mês a mês, detalhado, estouros ---------- */
+.capa-tela {
+  position: absolute; top: 18px; right: 22px; z-index: 2; max-width: none !important; width: auto !important; margin: 0 !important;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.22); color: rgba(255,255,255,.8);
+  font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px; transition: background .2s, color .2s;
+}
+.capa-tela:hover { background: rgba(255,255,255,.18); color: #fff; }
+body.em-tela-cheia .capa-tela { opacity: 0; pointer-events: none; }
+
+.kpi-val.grande { font-size: clamp(20px, 2vw, 28px); margin-top: 6px; }
+.kpis-grandes .kpi { padding: 16px 22px; }
+.grafs-mensal { grid-template-columns: 1fr 1.05fr; }
+.grafs-detalhe { grid-template-columns: .8fr 1.5fr; }
+.graf-grupos { height: 520px; }
+.tabela-grande { max-height: 560px; }
+.tabela-rolagem.sem-limite { max-height: none; }
+.selo { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); background: var(--surface-2); border-radius: 6px; padding: 1px 6px; margin-left: 4px; vertical-align: middle; }
+tr.pendente td { color: var(--ink-2); background: #fafbfc; }
+tr.pendente td.neg, tr.pendente td.pos { opacity: .8; }
+
+.insights { border-left: 5px solid var(--petroleo-2); }
+.insights h3 { font-size: 15px; margin-bottom: 8px; }
+.insights ul { list-style: none; display: grid; gap: 6px; }
+.insights li { position: relative; padding-left: 18px; font-size: 13.5px; color: var(--ink); }
+.insights li::before { content: ""; position: absolute; left: 2px; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--petroleo-2); }
+
+table.hier tr.grupo td { background: #eaf4f6; font-weight: 800; color: var(--petroleo-3); border-top: 2px solid #d3e6eb; }
+table.hier tr.item td:first-child { padding-left: 28px; font-weight: 500; color: var(--ink); }
+table.hier tr.item td { font-size: 12.5px; }
+.cod { font-size: 11px; font-weight: 700; color: var(--petroleo-2); margin-right: 4px; }
+td .sub { font-size: 11px; color: var(--ink-2); font-weight: 500; }
+
+@media (max-width: 1100px) {
+  .grafs-mensal, .grafs-detalhe { grid-template-columns: 1fr; }
+  .graf-grupos { height: 420px; }
+  .tabela-grande { max-height: none; }
+}

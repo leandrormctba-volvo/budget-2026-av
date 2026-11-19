@@ -24,21 +24,19 @@
 
 <main class="palco" id="palco">
 
-  <!-- 1. CAPA -->
+  <!-- CAPA -->
   <section class="slide capa ativo" data-titulo="Capa">
     <div class="capa-brilho"></div>
+    <button class="capa-tela" id="capaTela" title="Tela cheia (F)">⛶ Tela cheia</button>
     <div class="capa-conteudo">
       <img src="assets/img/logo-branco.png" alt="Associação Volvo" class="capa-logo">
       <div class="capa-linha"></div>
       <p class="capa-sobre">Apresentação</p>
       <h1>Budget 2026</h1>
-      <p class="capa-sub">Previsto × Realizado × Saldo · Receitas, despesas e atividades</p>
-      <p class="capa-data" id="capaData"></p>
     </div>
-    <p class="capa-dica">Use as setas ← → do teclado ou os botões abaixo para navegar</p>
   </section>
 
-  <!-- 2. VISÃO GERAL -->
+  <!-- VISÃO GERAL -->
   <section class="slide" data-titulo="Visão geral">
     <div class="slide-cab">
       <span class="tag">01 · Visão geral</span>
@@ -47,52 +45,71 @@
     </div>
     <div class="kpis" id="kpis"></div>
     <div class="grafs2">
-      <div class="cartao"><h3>Receitas mês a mês</h3><div class="graf"><canvas id="gRecMes"></canvas></div></div>
-      <div class="cartao"><h3>Despesas mês a mês</h3><div class="graf"><canvas id="gDespMes"></canvas></div></div>
+      <div class="cartao"><h3>Receitas mês a mês</h3><div class="graf"><canvas id="gRecMesVG"></canvas></div></div>
+      <div class="cartao"><h3>Despesas mês a mês</h3><div class="graf"><canvas id="gDespMesVG"></canvas></div></div>
     </div>
   </section>
 
-  <!-- 3. RESULTADO -->
-  <section class="slide" data-titulo="Resultado mensal">
+  <!-- RECEITAS MÊS A MÊS -->
+  <section class="slide" data-titulo="Receitas mês a mês">
     <div class="slide-cab">
-      <span class="tag">02 · Resultado</span>
-      <h2>Resultado mês a mês</h2>
-      <p class="nota">Resultado = receitas − despesas (inclui despesas extraordinárias)</p>
+      <span class="tag">02 · Receitas</span>
+      <h2>1 · Receitas — mês a mês</h2>
+      <p class="nota">Saldo = realizado − previsto. Negativo = entrou menos do que o previsto.</p>
     </div>
-    <div class="cartao alto"><div class="graf graf-alto"><canvas id="gResultado"></canvas></div></div>
-    <div class="cartao"><div class="tabela-rolagem" id="tabResultado"></div></div>
+    <div class="kpis kpis-grandes" id="recKpis"></div>
+    <div class="grafs2 grafs-mensal">
+      <div class="cartao"><div class="graf graf-alto"><canvas id="gRecMes"></canvas></div></div>
+      <div class="cartao"><div class="tabela-rolagem sem-limite" id="recTab"></div></div>
+    </div>
+    <div class="cartao insights" id="recIns"></div>
   </section>
 
-  <!-- 4. RECEITAS POR GRUPO -->
+  <!-- RECEITAS DETALHADAS -->
   <section class="slide" data-titulo="Receitas por grupo">
     <div class="slide-cab">
-      <span class="tag">03 · Receitas</span>
-      <h2>Receitas por grupo</h2>
-      <p class="nota">Clique em uma barra ou linha para abrir o comparativo mês a mês</p>
+      <span class="tag">03 · Receitas por grupo</span>
+      <h2>Receitas detalhadas: 1.1, 1.2, 1.3…</h2>
+      <p class="nota">Passe o mouse no gráfico para ver o valor exato · clique em uma linha para abrir o mês a mês</p>
     </div>
-    <div class="grafs2 grafs-lado">
-      <div class="cartao"><div class="graf graf-alto"><canvas id="gRecGrupo"></canvas></div></div>
-      <div class="cartao"><div class="tabela-rolagem" id="tabRecGrupo"></div></div>
+    <div class="grafs2 grafs-detalhe">
+      <div class="cartao"><div class="graf graf-grupos"><canvas id="gRecGrupo"></canvas></div></div>
+      <div class="cartao"><div class="tabela-rolagem tabela-grande" id="tabRecGrupo"></div></div>
     </div>
   </section>
 
-  <!-- 5. DESPESAS POR GRUPO -->
-  <section class="slide" data-titulo="Despesas por grupo">
+  <!-- DESPESAS MÊS A MÊS -->
+  <section class="slide" data-titulo="Despesas mês a mês">
     <div class="slide-cab">
       <span class="tag">04 · Despesas</span>
-      <h2>Despesas por grupo</h2>
-      <p class="nota">Clique em uma barra ou linha para abrir o comparativo mês a mês</p>
+      <h2>2 · Despesas — mês a mês</h2>
+      <p class="nota">Saldo = previsto − realizado. Positivo = economia · negativo = gastou mais do que o previsto.</p>
     </div>
-    <div class="grafs2 grafs-lado">
-      <div class="cartao"><div class="graf graf-alto"><canvas id="gDespGrupo"></canvas></div></div>
-      <div class="cartao"><div class="tabela-rolagem" id="tabDespGrupo"></div></div>
+    <div class="kpis kpis-grandes" id="despKpis"></div>
+    <div class="grafs2 grafs-mensal">
+      <div class="cartao"><div class="graf graf-alto"><canvas id="gDespMes"></canvas></div></div>
+      <div class="cartao"><div class="tabela-rolagem sem-limite" id="despTab"></div></div>
+    </div>
+    <div class="cartao insights" id="despIns"></div>
+  </section>
+
+  <!-- DESPESAS DETALHADAS -->
+  <section class="slide" data-titulo="Despesas por grupo">
+    <div class="slide-cab">
+      <span class="tag">05 · Despesas por grupo</span>
+      <h2>Despesas detalhadas: 2.1, 2.2, 2.4…</h2>
+      <p class="nota">Passe o mouse no gráfico para ver o valor exato · clique em uma linha para abrir o mês a mês</p>
+    </div>
+    <div class="grafs2 grafs-detalhe">
+      <div class="cartao"><div class="graf graf-grupos"><canvas id="gDespGrupo"></canvas></div></div>
+      <div class="cartao"><div class="tabela-rolagem tabela-grande" id="tabDespGrupo"></div></div>
     </div>
   </section>
 
-  <!-- 6. ATIVIDADES -->
+  <!-- ATIVIDADES -->
   <section class="slide" data-titulo="Atividades">
     <div class="slide-cab">
-      <span class="tag">05 · Atividades</span>
+      <span class="tag">06 · Atividades</span>
       <h2>Atividades do budget</h2>
       <p class="nota">Clique em uma atividade para ver o comparativo mês a mês</p>
     </div>
@@ -106,27 +123,37 @@
     <div class="ativ-grade" id="ativGrade"></div>
   </section>
 
-  <!-- 7. DESTAQUES -->
-  <section class="slide" data-titulo="Destaques">
+  <!-- DESTAQUES -->
+  <section class="slide" data-titulo="Maiores desvios">
     <div class="slide-cab">
-      <span class="tag">06 · Destaques</span>
-      <h2>Maiores desvios do período</h2>
+      <span class="tag">07 · Destaques</span>
+      <h2>Onde estamos gastando mais e onde estamos economizando</h2>
       <p class="nota">Itens de despesa com maior diferença entre previsto e realizado</p>
     </div>
     <div class="grafs2">
-      <div class="cartao"><h3 class="ruim">Acima do previsto</h3><div id="destRuim" class="lista-dest"></div></div>
+      <div class="cartao"><h3 class="ruim">Gastamos mais do que o previsto</h3><div id="destRuim" class="lista-dest"></div></div>
       <div class="cartao"><h3 class="bom">Maiores economias</h3><div id="destBom" class="lista-dest"></div></div>
     </div>
   </section>
 
-  <!-- 8. ENCERRAMENTO -->
+  <!-- ESTOUROS -->
+  <section class="slide" data-titulo="Itens que estouraram">
+    <div class="slide-cab">
+      <span class="tag">08 · Estouros</span>
+      <h2>Itens que estouraram o previsto</h2>
+      <p class="nota">Todas as despesas em que o realizado passou do previsto, comparadas com a receita prevista</p>
+    </div>
+    <div class="kpis" id="estKpis"></div>
+    <div class="cartao"><div class="tabela-rolagem tabela-grande" id="estTab"></div></div>
+  </section>
+
+  <!-- ENCERRAMENTO -->
   <section class="slide capa" data-titulo="Encerramento">
     <div class="capa-brilho"></div>
     <div class="capa-conteudo">
       <img src="assets/img/logo-branco.png" alt="Associação Volvo" class="capa-logo">
       <div class="capa-linha"></div>
       <h1>Obrigado</h1>
-      <p class="capa-sub">Budget 2026 · Associação Volvo</p>
     </div>
   </section>
 
