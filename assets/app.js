@@ -52,13 +52,10 @@
   const parcial = ultimoMes < 11; // o último mês lançado ainda está em andamento
 
   /* ---------- 2. Período ---------- */
-  // "ano"  = ano inteiro (igual à coluna Total)
-  // "fech" = até o último mês fechado (ex.: Jan–Out, quando novembro ainda está em lançamento)
-  // "ytd"  = até o último mês com lançamento, mesmo parcial (ex.: Jan–Nov)
+  // periodo = "ano" (ano inteiro) ou o índice do mês (0 = Jan … 11 = Dez): acumulado de janeiro até esse mês
   let periodo = "ano";
-  const ultimoFechado = () => (parcial ? ultimoMes - 1 : ultimoMes);
-  const nMeses = () => (periodo === "ano" ? 12 : periodo === "fech" ? ultimoFechado() + 1 : ultimoMes + 1);
-  const rotuloPeriodo = () => (periodo === "ano" ? "2026" : "Jan–" + MESES[nMeses() - 1]);
+  const nMeses = () => (periodo === "ano" ? 12 : periodo + 1);
+  const rotuloPeriodo = () => (periodo === "ano" ? "2026" : periodo === 0 ? "Jan" : "Jan–" + MESES[periodo]);
   const soma = (arr, n) => arr.slice(0, n).reduce((a, b) => a + b, 0);
   const saldoMes = (l, i) => (l.tipo === "rec" ? l.r[i] - l.p[i] : l.p[i] - l.r[i]); // positivo = favorável
   function totais(l, n = nMeses()) {
@@ -205,13 +202,14 @@
       for (let i = ultimoMes + 1; i < 12; i++) futuro += saldoMes(l, i);
       li.push(`<b>${faixa(ultimoMes + 1, 11)} ainda não ${ultimoMes === 10 ? "foi lançado" : "foram lançados"}:</b> ${sinal(futuro)}${curto(futuro)} do saldo (${pct(futuro / t.S)} do total) é só o ${rec ? "valor previsto que ainda vai entrar" : "valor previsto que ainda vai ser gasto"}.`);
     }
-    if (parcial && periodo !== "fech") {
+    const fim = nMeses() - 1; // último mês incluído no período escolhido
+    if (parcial && fim >= ultimoMes) {
       const s = saldoMes(l, ultimoMes);
       li.push(`<b>${nomeMes(ultimoMes)} está com lançamentos parciais:</b> ${sinal(s)}${curto(s)} até agora (${pct(l.p[ultimoMes] ? l.r[ultimoMes] / l.p[ultimoMes] : null)} do previsto do mês).`);
     }
     const fechados = parcial ? ultimoMes : ultimoMes + 1;
-    if (periodo === "fech" && parcial) {
-      li.push(`<b>${nomeMes(ultimoMes)} não entra nesta comparação</b> porque ainda está com lançamentos parciais.${ultimoMes < 11 ? ` ${faixa(ultimoMes + 1, 11)} ainda não ${ultimoMes === 10 ? "foi lançado" : "foram lançados"}.` : ""}`);
+    if (periodo !== "ano" && fim < 11) {
+      li.push(`<b>Período analisado: ${faixa(0, fim)}.</b> ${faixa(fim + 1, 11)} não ${fim === 10 ? "entra" : "entram"} nesta comparação.`);
     } else if (fechados > 0) {
       const tf = totais(l, fechados);
       li.push(`<b>Nos meses fechados (${faixa(0, fechados - 1)}):</b> previsto ${curto(tf.P)}, realizado ${curto(tf.R)} → saldo de <span class="${classe(tf.S)}">${sinal(tf.S)}${curto(tf.S)}</span> (${pct(tf.exec)} executado).`);
@@ -525,11 +523,28 @@
   document.addEventListener("fullscreenchange", () => document.body.classList.toggle("em-tela-cheia", !!document.fullscreenElement));
 
   /* ---------- 12. Controles ---------- */
-  document.querySelectorAll(".periodo button").forEach(b => b.addEventListener("click", () => {
-    periodo = b.dataset.periodo;
-    document.querySelectorAll(".periodo button").forEach(x => x.classList.toggle("ativo", x === b));
+  // seletor de período: "Ano 2026" + um botão por mês (no celular, uma lista suspensa)
+  const caixaMeses = document.getElementById("periodoMeses");
+  const selMes = document.getElementById("selMes");
+  caixaMeses.innerHTML = MESES.map((m, i) => {
+    const semDados = i > ultimoMes;
+    const dica = semDados ? `${nomeMes(i)}: ainda sem lançamentos`
+      : `Acumulado de janeiro a ${MESES_LONGOS[i]}` + (i === ultimoMes && parcial ? " (mês ainda em lançamento)" : "");
+    return `<button data-mes="${i}" title="${dica}" ${semDados ? "disabled" : ""}>${m}${i === ultimoMes && parcial ? "*" : ""}</button>`;
+  }).join("");
+  selMes.innerHTML = `<option value="">Mês…</option>` + MESES.map((m, i) =>
+    `<option value="${i}" ${i > ultimoMes ? "disabled" : ""}>${m}${i === ultimoMes && parcial ? " (parcial)" : ""}</option>`).join("");
+  function escolherPeriodo(p) {
+    periodo = p;
+    document.querySelector('[data-periodo="ano"]').classList.toggle("ativo", p === "ano");
+    caixaMeses.querySelectorAll("button").forEach(b => b.classList.toggle("ativo", +b.dataset.mes === p));
+    selMes.value = p === "ano" ? "" : String(p);
+    selMes.classList.toggle("ativo", p !== "ano");
     renderTudo();
-  }));
+  }
+  document.querySelector('[data-periodo="ano"]').addEventListener("click", () => escolherPeriodo("ano"));
+  caixaMeses.querySelectorAll("button").forEach(b => b.addEventListener("click", () => escolherPeriodo(+b.dataset.mes)));
+  selMes.addEventListener("change", () => escolherPeriodo(selMes.value === "" ? "ano" : +selMes.value));
   document.querySelectorAll(".abas button").forEach(b => b.addEventListener("click", () => {
     aba = b.dataset.aba;
     document.querySelectorAll(".abas button").forEach(x => x.classList.toggle("ativo", x === b));
@@ -539,14 +554,6 @@
   document.getElementById("busca").addEventListener("input", renderAtividades);
 
   function renderTudo() {
-    const mesNome = MESES_LONGOS[ultimoMes];
-    document.getElementById("btnYtd").textContent = "Até " + MESES[ultimoMes];
-    document.getElementById("btnYtd").title = "Previsto e realizado acumulados de janeiro a " + mesNome + (parcial ? " (mês ainda em lançamento)" : "");
-    const btnFech = document.getElementById("btnFech");
-    btnFech.hidden = !parcial || ultimoMes === 0; // sem mês parcial, "fechado" seria igual ao acumulado
-    btnFech.textContent = "Até " + MESES[ultimoFechado()];
-    btnFech.title = "Somente meses fechados: janeiro a " + MESES_LONGOS[ultimoFechado()];
-    document.querySelector('[data-periodo="ano"]').title = "Ano inteiro (igual à coluna Total da planilha)";
     renderMensal(REC, "rec");
     renderMensal(DESP, "desp");
     renderGrupos("rec", "gRecGrupo", "tabRecGrupo", "painelRec");
