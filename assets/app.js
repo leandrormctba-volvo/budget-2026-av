@@ -52,8 +52,13 @@
   const parcial = ultimoMes < 11; // o último mês lançado ainda está em andamento
 
   /* ---------- 2. Período ---------- */
-  let periodo = "ano"; // "ano" = ano inteiro (igual à coluna Total) | "ytd" = só até o último mês lançado
-  const nMeses = () => (periodo === "ano" ? 12 : ultimoMes + 1);
+  // "ano"  = ano inteiro (igual à coluna Total)
+  // "fech" = até o último mês fechado (ex.: Jan–Out, quando novembro ainda está em lançamento)
+  // "ytd"  = até o último mês com lançamento, mesmo parcial (ex.: Jan–Nov)
+  let periodo = "ano";
+  const ultimoFechado = () => (parcial ? ultimoMes - 1 : ultimoMes);
+  const nMeses = () => (periodo === "ano" ? 12 : periodo === "fech" ? ultimoFechado() + 1 : ultimoMes + 1);
+  const rotuloPeriodo = () => (periodo === "ano" ? "2026" : "Jan–" + MESES[nMeses() - 1]);
   const soma = (arr, n) => arr.slice(0, n).reduce((a, b) => a + b, 0);
   const saldoMes = (l, i) => (l.tipo === "rec" ? l.r[i] - l.p[i] : l.p[i] - l.r[i]); // positivo = favorável
   function totais(l, n = nMeses()) {
@@ -167,7 +172,7 @@
   /* ---------- 6. Receitas / Despesas mês a mês ---------- */
   function renderMensal(l, pre) {
     const t = totais(l);
-    const rotPer = periodo === "ano" ? "Total 2026" : "Total Jan–" + MESES[ultimoMes];
+    const rotPer = "Total " + rotuloPeriodo();
     document.getElementById(pre + "Kpis").innerHTML = `
       <div class="kpi"><div class="kpi-nome">Previsto · ${rotPer}</div><div class="kpi-val grande">${exato(t.P)}</div></div>
       <div class="kpi"><div class="kpi-nome">Realizado · ${rotPer}</div><div class="kpi-val grande">${exato(t.R)}</div><div class="kpi-exec">${pct(t.exec)} do previsto</div></div>
@@ -200,12 +205,14 @@
       for (let i = ultimoMes + 1; i < 12; i++) futuro += saldoMes(l, i);
       li.push(`<b>${faixa(ultimoMes + 1, 11)} ainda não ${ultimoMes === 10 ? "foi lançado" : "foram lançados"}:</b> ${sinal(futuro)}${curto(futuro)} do saldo (${pct(futuro / t.S)} do total) é só o ${rec ? "valor previsto que ainda vai entrar" : "valor previsto que ainda vai ser gasto"}.`);
     }
-    if (parcial) {
+    if (parcial && periodo !== "fech") {
       const s = saldoMes(l, ultimoMes);
       li.push(`<b>${nomeMes(ultimoMes)} está com lançamentos parciais:</b> ${sinal(s)}${curto(s)} até agora (${pct(l.p[ultimoMes] ? l.r[ultimoMes] / l.p[ultimoMes] : null)} do previsto do mês).`);
     }
     const fechados = parcial ? ultimoMes : ultimoMes + 1;
-    if (fechados > 0) {
+    if (periodo === "fech" && parcial) {
+      li.push(`<b>${nomeMes(ultimoMes)} não entra nesta comparação</b> porque ainda está com lançamentos parciais.${ultimoMes < 11 ? ` ${faixa(ultimoMes + 1, 11)} ainda não ${ultimoMes === 10 ? "foi lançado" : "foram lançados"}.` : ""}`);
+    } else if (fechados > 0) {
       const tf = totais(l, fechados);
       li.push(`<b>Nos meses fechados (${faixa(0, fechados - 1)}):</b> previsto ${curto(tf.P)}, realizado ${curto(tf.R)} → saldo de <span class="${classe(tf.S)}">${sinal(tf.S)}${curto(tf.S)}</span> (${pct(tf.exec)} executado).`);
     }
@@ -465,7 +472,7 @@
         <td>${fut || !l.p[i] ? "—" : pct(l.r[i] / l.p[i])}</td></tr>`;
     }).join("");
     document.getElementById("mTabela").innerHTML = `<table><thead><tr><th>Mês</th><th>Previsto</th><th>Realizado</th><th>Saldo no mês</th><th>Saldo acum.</th><th>Execução</th></tr></thead>
-      <tbody>${linhasT}<tr class="total"><td>Total ${periodo === "ano" ? "2026" : "Jan–" + MESES[ultimoMes]}</td><td>${exato(t.P)}</td><td>${exato(t.R)}</td><td class="${classe(t.S)}">${sinal(t.S)}${exato(t.S)}</td><td></td><td>${pct(t.exec)}</td></tr></tbody></table>`;
+      <tbody>${linhasT}<tr class="total"><td>Total ${rotuloPeriodo()}</td><td>${exato(t.P)}</td><td>${exato(t.R)}</td><td class="${classe(t.S)}">${sinal(t.S)}${exato(t.S)}</td><td></td><td>${pct(t.exec)}</td></tr></tbody></table>`;
 
     modal.classList.add("aberto");
     modal.setAttribute("aria-hidden", "false");
@@ -534,7 +541,11 @@
   function renderTudo() {
     const mesNome = MESES_LONGOS[ultimoMes];
     document.getElementById("btnYtd").textContent = "Até " + MESES[ultimoMes];
-    document.getElementById("btnYtd").title = "Previsto e realizado acumulados de janeiro a " + mesNome;
+    document.getElementById("btnYtd").title = "Previsto e realizado acumulados de janeiro a " + mesNome + (parcial ? " (mês ainda em lançamento)" : "");
+    const btnFech = document.getElementById("btnFech");
+    btnFech.hidden = !parcial || ultimoMes === 0; // sem mês parcial, "fechado" seria igual ao acumulado
+    btnFech.textContent = "Até " + MESES[ultimoFechado()];
+    btnFech.title = "Somente meses fechados: janeiro a " + MESES_LONGOS[ultimoFechado()];
     document.querySelector('[data-periodo="ano"]').title = "Ano inteiro (igual à coluna Total da planilha)";
     renderMensal(REC, "rec");
     renderMensal(DESP, "desp");

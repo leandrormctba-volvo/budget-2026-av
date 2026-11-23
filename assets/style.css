@@ -444,3 +444,11 @@ body.modo-impressao { overflow: visible; display: block; height: auto; width: 10
 .leg-item-nome { grid-column: 1; grid-row: 1; }
 .leg-item-saldo { grid-column: 2; grid-row: 1; }
 .leg-item-val { grid-column: 1 / -1; grid-row: 2; }
+
+/* ---------- v5: seletor de período com 3 opções ---------- */
+.periodo button { white-space: nowrap; }
+@media (max-width: 640px) {
+  .so-desk { display: none; }
+  .periodo button { padding: 6px 9px; font-size: 11.5px; }
+  .topo { gap: 8px; }
+}
